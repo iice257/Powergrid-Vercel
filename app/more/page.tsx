@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { InteractiveCard } from "@/components/interactive-card"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   User,
   Settings,
@@ -16,7 +20,6 @@ import {
   HelpCircle,
   LogOut,
   CreditCard,
-  MapPin,
   Smartphone,
   Globe,
   Moon,
@@ -27,11 +30,32 @@ import {
   MessageSquare,
   Star,
   ChevronRight,
+  Camera,
+  Save,
+  Edit,
 } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 
 export default function MorePage() {
   const { theme, setTheme } = useTheme()
+  const [isEditingProfile, setIsEditingProfile] = useState(false)
+  const [profileData, setProfileData] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    phone: "+234 801 234 5678",
+    bio: "Power grid enthusiast and community reporter",
+    location: "Lagos, Ikeja",
+  })
+
+  // Check if we should scroll to profile section
+  useEffect(() => {
+    if (window.location.hash === "#profile") {
+      const profileSection = document.getElementById("profile-section")
+      if (profileSection) {
+        profileSection.scrollIntoView({ behavior: "smooth" })
+      }
+    }
+  }, [])
 
   const userStats = {
     streak: 12,
@@ -42,21 +66,13 @@ export default function MorePage() {
     level: "Gold Reporter",
   }
 
+  const handleProfileSave = () => {
+    setIsEditingProfile(false)
+    // Here you would typically save to backend
+    console.log("Profile saved:", profileData)
+  }
+
   const menuSections = [
-    {
-      title: "Account",
-      items: [
-        { icon: User, label: "Profile Settings", description: "Manage your personal information", action: () => {} },
-        {
-          icon: CreditCard,
-          label: "Billing & Credits",
-          description: "View credits and payment history",
-          badge: "2,450",
-          action: () => {},
-        },
-        { icon: MapPin, label: "Location Settings", description: "Update your area and preferences", action: () => {} },
-      ],
-    },
     {
       title: "Preferences",
       items: [
@@ -136,35 +152,121 @@ export default function MorePage() {
           <p className="text-lg text-muted-foreground">Manage your account and app preferences</p>
         </motion.div>
 
-        {/* Profile Card */}
+        {/* Profile Settings Card */}
         <motion.div
+          id="profile-section"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-8"
         >
           <InteractiveCard>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <Avatar className="h-16 w-16 border-2 border-primary/20">
-                  <AvatarImage src="/placeholder.svg?height=64&width=64&text=JD" />
-                  <AvatarFallback className="text-lg">JD</AvatarFallback>
-                </Avatar>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5 text-primary" />
+                  Profile Settings
+                </CardTitle>
+                <Button
+                  variant={isEditingProfile ? "default" : "outline"}
+                  onClick={() => (isEditingProfile ? handleProfileSave() : setIsEditingProfile(true))}
+                  className="gap-2"
+                >
+                  {isEditingProfile ? (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4" />
+                      Edit Profile
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Profile Picture Section */}
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <Avatar className="h-20 w-20 border-2 border-primary/20">
+                    <AvatarImage src="/placeholder.svg?height=80&width=80&text=JD" />
+                    <AvatarFallback className="text-xl">JD</AvatarFallback>
+                  </Avatar>
+                  {isEditingProfile && (
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold mb-1">John Doe</h2>
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="secondary">{userStats.level}</Badge>
                     <Badge variant="outline">Rank #{userStats.rank}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">Member since January 2024</p>
                 </div>
-                <Button variant="outline" className="gap-2 bg-transparent">
-                  <User className="w-4 h-4" />
-                  Edit Profile
-                </Button>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Profile Form */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    value={profileData.name}
+                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={profileData.location}
+                    onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                    disabled={!isEditingProfile}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={profileData.bio}
+                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                  disabled={!isEditingProfile}
+                  rows={3}
+                />
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex items-center justify-center gap-1 mb-1">
                     <Zap className="w-4 h-4 text-primary" />
@@ -277,11 +379,6 @@ export default function MorePage() {
                           <p className="text-sm text-muted-foreground">{item.description}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          {item.badge && (
-                            <Badge variant="secondary" className="text-xs">
-                              {item.badge}
-                            </Badge>
-                          )}
                           {item.value && <span className="text-sm text-muted-foreground">{item.value}</span>}
                           {item.toggle ? (
                             <Switch defaultChecked />
