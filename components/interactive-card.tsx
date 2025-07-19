@@ -1,49 +1,80 @@
 "use client"
 
 import type React from "react"
-
-import { motion } from "framer-motion"
+import { useRef, useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 interface InteractiveCardProps {
   children: React.ReactNode
   className?: string
-  onClick?: () => void
 }
 
-export function InteractiveCard({ children, className, onClick }: InteractiveCardProps) {
+export function InteractiveCard({ children, className }: InteractiveCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isHovered, setIsHovered] = useState(false)
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!cardRef.current) return
+
+      const rect = cardRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+
+      setMousePosition({ x, y })
+    }
+
+    const handleMouseEnter = () => setIsHovered(true)
+    const handleMouseLeave = () => setIsHovered(false)
+
+    const card = cardRef.current
+    if (card) {
+      card.addEventListener("mousemove", handleMouseMove)
+      card.addEventListener("mouseenter", handleMouseEnter)
+      card.addEventListener("mouseleave", handleMouseLeave)
+    }
+
+    return () => {
+      if (card) {
+        card.removeEventListener("mousemove", handleMouseMove)
+        card.removeEventListener("mouseenter", handleMouseEnter)
+        card.removeEventListener("mouseleave", handleMouseLeave)
+      }
+    }
+  }, [])
+
   return (
-    <motion.div
-      whileHover={{
-        scale: 1.02,
-        transition: { duration: 0.2 },
+    <Card
+      ref={cardRef}
+      className={cn(
+        "relative overflow-hidden transition-all duration-500 glass-card border-primary/10 shadow-xl",
+        className,
+      )}
+      style={{
+        background: isHovered
+          ? `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(79, 172, 254, 0.15), rgba(79, 172, 254, 0.05) 40%, transparent 70%)`
+          : undefined,
       }}
-      whileTap={{ scale: 0.98 }}
-      className="group cursor-pointer"
-      onClick={onClick}
     >
-      <Card
-        className={cn(
-          "relative overflow-hidden transition-all duration-300",
-          "hover:shadow-xl hover:shadow-primary/10",
-          "before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300",
-          "hover:before:opacity-100",
-          "border-border/50 hover:border-primary/20",
-          className,
-        )}
-      >
-        <div className="relative z-10">{children}</div>
-
-        {/* Animated border glow */}
-        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/20 via-transparent to-primary/20 blur-sm" />
-        </div>
-
-        {/* Corner highlights */}
-        <div className="absolute top-0 left-0 w-8 h-8 bg-gradient-to-br from-primary/10 to-transparent rounded-tl-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-tl from-primary/10 to-transparent rounded-br-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </Card>
-    </motion.div>
+      {isHovered && (
+        <>
+          <div
+            className="absolute inset-0 opacity-40 transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(200px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(79, 172, 254, 0.3), transparent 60%)`,
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-20 transition-opacity duration-500"
+            style={{
+              background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(79, 172, 254, 0.1), transparent 80%)`,
+            }}
+          />
+        </>
+      )}
+      <div className="relative z-10">{children}</div>
+    </Card>
   )
 }
