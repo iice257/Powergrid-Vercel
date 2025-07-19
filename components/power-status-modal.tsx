@@ -1,169 +1,186 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { motion, AnimatePresence } from "framer-motion"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Zap, ZapOff, AlertTriangle, MapPin, Clock, Send } from "lucide-react"
-import { motion } from "framer-motion"
+import { Zap, ZapOff, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react"
 
 interface PowerStatusModalProps {
-  isOpen: boolean
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onReportSubmitted: (status: "on" | "off") => void
+  canRefresh: boolean
 }
 
-export function PowerStatusModal({ isOpen, onClose }: PowerStatusModalProps) {
-  const [status, setStatus] = useState("online")
-  const [location, setLocation] = useState("")
-  const [customTime, setCustomTime] = useState("")
-  const [details, setDetails] = useState("")
+export function PowerStatusModal({ open, onOpenChange, onReportSubmitted, canRefresh }: PowerStatusModalProps) {
+  const [selectedStatus, setSelectedStatus] = useState<"on" | "off">("on")
+  const [comments, setComments] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const statusOptions = [
-    { value: "online", label: "Power Available", icon: Zap, color: "text-green-500", bg: "bg-green-500/10" },
-    { value: "offline", label: "No Power", icon: ZapOff, color: "text-red-500", bg: "bg-red-500/10" },
-    {
-      value: "unstable",
-      label: "Unstable/Fluctuating",
-      icon: AlertTriangle,
-      color: "text-yellow-500",
-      bg: "bg-yellow-500/10",
-    },
-  ]
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setIsSubmitting(true)
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     setIsSubmitting(false)
-    onClose()
+    setIsSubmitted(true)
 
-    // Reset form
-    setStatus("online")
-    setLocation("")
-    setCustomTime("")
-    setDetails("")
+    // Show success state for 1 second, then close and update
+    setTimeout(() => {
+      onReportSubmitted(selectedStatus)
+      onOpenChange(false)
+      setIsSubmitted(false)
+      setComments("")
+    }, 1500)
+  }
+
+  const handleClose = () => {
+    if (!isSubmitting) {
+      onOpenChange(false)
+      setIsSubmitted(false)
+      setComments("")
+    }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md glass">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary" />
+            <Zap className="w-5 h-5 text-primary" />
             Report Power Status
           </DialogTitle>
+          <DialogDescription>Help your community by reporting the current power status in your area</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Status Selection */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Current Power Status</Label>
-            <RadioGroup value={status} onValueChange={setStatus}>
-              {statusOptions.map((option) => (
-                <motion.div key={option.value} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Label
-                    htmlFor={option.value}
-                    className={`
-                      flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all
-                      ${
-                        status === option.value
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }
-                    `}
-                  >
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <div className={`p-2 rounded-full ${option.bg}`}>
-                      <option.icon className={`h-4 w-4 ${option.color}`} />
-                    </div>
-                    <span className="font-medium">{option.label}</span>
-                  </Label>
-                </motion.div>
-              ))}
-            </RadioGroup>
-          </div>
-
-          {/* Location */}
-          <div className="space-y-2">
-            <Label htmlFor="location" className="text-sm font-medium flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Location (Optional)
-            </Label>
-            <Input
-              id="location"
-              placeholder="e.g., Victoria Island, Lekki Phase 1"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="bg-background/50"
-            />
-            <p className="text-xs text-muted-foreground">Leave empty to use your current location: Lagos, Ikeja</p>
-          </div>
-
-          {/* Custom Time */}
-          <div className="space-y-2">
-            <Label htmlFor="time" className="text-sm font-medium flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Time (Optional)
-            </Label>
-            <Input
-              id="time"
-              type="datetime-local"
-              value={customTime}
-              onChange={(e) => setCustomTime(e.target.value)}
-              className="bg-background/50"
-            />
-            <p className="text-xs text-muted-foreground">Leave empty to use current time</p>
-          </div>
-
-          {/* Additional Details */}
-          <div className="space-y-2">
-            <Label htmlFor="details" className="text-sm font-medium">
-              Additional Details (Optional)
-            </Label>
-            <Textarea
-              id="details"
-              placeholder="Any additional information about the power situation..."
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              className="bg-background/50 min-h-[80px]"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 bg-transparent"
-              disabled={isSubmitting}
+        <AnimatePresence mode="wait">
+          {isSubmitted ? (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="py-8 text-center"
             >
-              Cancel
-            </Button>
-            <Button type="submit" className="flex-1 gap-2" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  Submit Report
-                </>
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Report Submitted!</h3>
+              <p className="text-muted-foreground">Thank you for helping your community stay informed</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
+            >
+              {/* Location Info */}
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-sm">Lagos, Ikeja • Nigeria</span>
+                <Badge variant="outline" className="ml-auto text-xs">
+                  Detected
+                </Badge>
+              </div>
+
+              {/* Status Selection */}
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Current Power Status</Label>
+                <RadioGroup
+                  value={selectedStatus}
+                  onValueChange={(value) => setSelectedStatus(value as "on" | "off")}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="on" id="power-on" />
+                    <Label
+                      htmlFor="power-on"
+                      className="flex items-center gap-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors flex-1"
+                    >
+                      <Zap className="w-4 h-4 text-green-500" />
+                      <span>Power ON</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="off" id="power-off" />
+                    <Label
+                      htmlFor="power-off"
+                      className="flex items-center gap-2 cursor-pointer p-3 rounded-lg border hover:bg-muted/50 transition-colors flex-1"
+                    >
+                      <ZapOff className="w-4 h-4 text-red-500" />
+                      <span>Power OFF</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Comments */}
+              <div className="space-y-2">
+                <Label htmlFor="comments">Additional Comments (Optional)</Label>
+                <Textarea
+                  id="comments"
+                  placeholder="Any additional details about the power situation..."
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  className="min-h-[80px]"
+                />
+              </div>
+
+              {/* Warning for recent reports */}
+              {!canRefresh && (
+                <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-700 dark:text-yellow-400">Recent Report Submitted</p>
+                    <p className="text-yellow-600 dark:text-yellow-500">
+                      You've recently submitted a report. Please wait before submitting another one.
+                    </p>
+                  </div>
+                </div>
               )}
-            </Button>
-          </div>
-        </form>
+
+              {/* Submit Button */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-transparent"
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSubmit} disabled={isSubmitting} className="flex-1 gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Reporting...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      Submit Report
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Info */}
+              <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+                <div className="flex items-center justify-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>Reports are verified by the community</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   )

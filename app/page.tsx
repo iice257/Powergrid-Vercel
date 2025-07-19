@@ -1,198 +1,298 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { InteractiveCard } from "@/components/interactive-card"
+import { CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Zap, MapPin, Clock, TrendingUp, CheckCircle, Users, Activity, Plus } from "lucide-react"
-import { motion } from "framer-motion"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PowerStatusModal } from "@/components/power-status-modal"
-import { StatsChart } from "@/components/stats-chart"
+import { useTheme } from "@/components/theme-provider"
+import { Zap, ZapOff, MapPin, Clock, Users, RefreshCw, Sun, Moon, Bell, User } from "lucide-react"
 
 export default function HomePage() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [powerStatus, setPowerStatus] = useState<"on" | "off">("on")
+  const [lastUpdate, setLastUpdate] = useState("2 mins ago")
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [canRefresh, setCanRefresh] = useState(true)
+  const { theme, setTheme } = useTheme()
+  const [notifications] = useState(3)
 
-  const stats = [
-    { label: "Power Status", value: "92%", icon: Zap, color: "text-green-500", trend: "+5%" },
-    { label: "Active Users", value: "1,247", icon: Users, color: "text-blue-500", trend: "+12%" },
-    { label: "Reports Today", value: "34", icon: Activity, color: "text-purple-500", trend: "+8%" },
-    { label: "Avg Uptime", value: "18.5h", icon: Clock, color: "text-orange-500", trend: "+2h" },
-  ]
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000) // Update every minute
+    return () => clearInterval(timer)
+  }, [])
 
-  const recentReports = [
-    { id: 1, location: "Victoria Island", status: "online", time: "2 min ago", user: "John D." },
-    { id: 2, location: "Ikeja GRA", status: "offline", time: "5 min ago", user: "Sarah M." },
-    { id: 3, location: "Lekki Phase 1", status: "online", time: "8 min ago", user: "Mike R." },
-    { id: 4, location: "Surulere", status: "unstable", time: "12 min ago", user: "Ada K." },
-  ]
+  const handleRefresh = async () => {
+    if (!canRefresh || isRefreshing) return
+
+    setIsRefreshing(true)
+
+    // Simulate refresh with minimum 0.5 seconds
+    const startTime = Date.now()
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 500))
+
+    const elapsed = Date.now() - startTime
+    const remainingTime = Math.max(0, 500 - elapsed)
+
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime))
+    }
+
+    setLastUpdate("Just now")
+    setIsRefreshing(false)
+
+    // Update to "1 min ago" after 1 minute
+    setTimeout(() => setLastUpdate("1 min ago"), 60000)
+  }
+
+  const handleReportSubmitted = (status: "on" | "off") => {
+    setPowerStatus(status)
+    setLastUpdate("Just now")
+    setCanRefresh(false)
+
+    // Re-enable refresh after 30 minutes (for demo, using 30 seconds)
+    setTimeout(() => setCanRefresh(true), 30000)
+
+    // Update to "1 min ago" after 1 minute
+    setTimeout(() => setLastUpdate("1 min ago"), 60000)
+  }
+
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "Good morning"
+    if (hour < 17) return "Good afternoon"
+    return "Good evening"
+  }
+
+  const getThemeColors = () => {
+    if (powerStatus === "on") {
+      return {
+        bg: theme === "dark" ? "from-green-500/20 to-green-600/10" : "from-green-400/20 to-green-500/10",
+        border: theme === "dark" ? "border-green-500/30" : "border-green-400/30",
+        shadow: theme === "dark" ? "shadow-green-500/20" : "shadow-green-400/20",
+        text: "text-green-500",
+        icon: "#22c55e",
+      }
+    } else {
+      return {
+        bg: theme === "dark" ? "from-red-500/20 to-red-600/10" : "from-red-400/20 to-red-500/10",
+        border: theme === "dark" ? "border-red-500/30" : "border-red-400/30",
+        shadow: theme === "dark" ? "shadow-red-500/20" : "shadow-red-400/20",
+        text: "text-red-500",
+        icon: "#ef4444",
+      }
+    }
+  }
+
+  const themeColors = getThemeColors()
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="p-4 space-y-6">
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 lg:pt-24 overflow-hidden">
+      <div className="max-w-7xl mx-auto p-4 lg:p-8 h-screen flex flex-col">
+        {/* Header with Theme Toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-between mb-8"
+        >
+          {/* Left side - Greeting and Profile */}
+          <div className="flex items-center gap-4">
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarImage src="/placeholder.svg?height=48&width=48&text=JD" />
+              <AvatarFallback>JD</AvatarFallback>
+            </Avatar>
             <div>
-              <h1 className="text-2xl font-bold">Power Status</h1>
-              <p className="text-muted-foreground">Lagos, Ikeja • Real-time updates</p>
+              <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, John!</h1>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>{currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                <span>•</span>
+                <span>Updated {lastUpdate}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={!canRefresh || isRefreshing}
+                  className="h-6 w-6 p-0 ml-1"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
+                </Button>
+              </div>
             </div>
-            <Button onClick={() => setIsModalOpen(true)} className="gap-2 bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4" />
-              Report
+          </div>
+
+          {/* Right side - Controls */}
+          <div className="flex items-center gap-3">
+            {/* Location */}
+            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+              <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="hidden md:inline text-sm">Lagos, Ikeja</span>
+              </Button>
+            </motion.div>
+
+            {/* Notifications */}
+            <Button variant="ghost" size="icon" className="relative h-10 w-10">
+              <Bell className="h-4 w-4" />
+              {notifications > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-0">
+                  {notifications}
+                </Badge>
+              )}
+            </Button>
+
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="relative overflow-hidden h-10 w-10"
+            >
+              <motion.div
+                initial={false}
+                animate={{
+                  rotate: theme === "dark" ? 0 : 180,
+                  scale: theme === "dark" ? 1 : 1,
+                }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="relative w-4 h-4"
+              >
+                {theme === "dark" ? (
+                  <Moon className="w-4 h-4 text-primary absolute inset-0" />
+                ) : (
+                  <Sun className="w-4 h-4 text-primary absolute inset-0" />
+                )}
+              </motion.div>
+            </Button>
+
+            {/* Profile */}
+            <Button variant="ghost" size="icon" className="h-10 w-10">
+              <User className="h-4 w-4" />
             </Button>
           </div>
         </motion.div>
 
-        {/* Current Status Card */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <Card className="neon-glow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-full bg-green-500/10">
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">Power Available</h3>
-                    <p className="text-sm text-muted-foreground">Last updated 2 minutes ago</p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="bg-green-500/10 text-green-500">
-                  92% Uptime
-                </Badge>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span>Grid Stability</span>
-                  <span className="font-medium">Excellent</span>
-                </div>
-                <Progress value={92} className="h-2" />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Last outage: 6 hours ago</span>
-                  <span>Duration: 45 minutes</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Stats Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="w-full max-w-2xl"
+          >
+            {/* Enhanced Power Status Card */}
+            <InteractiveCard
+              className={`relative overflow-hidden bg-gradient-to-br ${themeColors.bg} border-2 ${themeColors.border} shadow-2xl ${themeColors.shadow}`}
             >
-              <Card className="neon-glow">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                    <Badge variant="outline" className="text-xs">
-                      {stat.trend}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+              <CardContent className="p-12 text-center">
+                {/* Animated Background Glow */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${themeColors.bg} opacity-50 animate-pulse`} />
 
-        {/* Stats Chart */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <StatsChart />
-        </motion.div>
-
-        {/* Recent Reports */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <Card className="neon-glow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Recent Reports
-              </CardTitle>
-              <CardDescription>Latest power status updates from your area</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentReports.map((report, index) => (
-                <motion.div
-                  key={report.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        report.status === "online"
-                          ? "bg-green-500"
-                          : report.status === "offline"
-                            ? "bg-red-500"
-                            : "bg-yellow-500"
-                      }`}
-                    />
-                    <div>
-                      <p className="font-medium text-sm">{report.location}</p>
-                      <p className="text-xs text-muted-foreground">by {report.user}</p>
+                <div className="relative z-10">
+                  {/* Power Icon */}
+                  <div className="flex items-center justify-center mb-8">
+                    <div className="relative">
+                      <div
+                        className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl`}
+                        style={{
+                          background:
+                            powerStatus === "on"
+                              ? `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`
+                              : `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`,
+                          boxShadow: `0 0 40px ${themeColors.icon}40`,
+                        }}
+                      >
+                        {powerStatus === "on" ? (
+                          <Zap className="w-16 h-16 text-white" />
+                        ) : (
+                          <ZapOff className="w-16 h-16 text-white" />
+                        )}
+                      </div>
+                      <div
+                        className="absolute inset-0 rounded-full animate-ping"
+                        style={{ backgroundColor: `${themeColors.icon}30` }}
+                      />
                     </div>
                   </div>
-                  <div className="text-right">
-                    <Badge variant={report.status === "online" ? "default" : "destructive"} className="text-xs">
-                      {report.status}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">{report.time}</p>
+
+                  {/* Status Text */}
+                  <div className="space-y-4">
+                    <h2 className={`text-5xl font-bold ${themeColors.text} mb-4`}>
+                      Power is {powerStatus === "on" ? "ON" : "OFF"}
+                    </h2>
+                    <p className="text-xl text-muted-foreground mb-8">
+                      {powerStatus === "on"
+                        ? "Electricity is currently available in your area"
+                        : "Power outage reported in your area"}
+                    </p>
+
+                    {/* Action Button */}
+                    <Button
+                      onClick={() => setShowStatusModal(true)}
+                      size="lg"
+                      className="gap-3 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <Zap className="w-5 h-5" />
+                      Report Power Status
+                    </Button>
                   </div>
-                </motion.div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="grid grid-cols-2 gap-4"
-        >
-          <Card className="neon-glow">
-            <CardContent className="p-4 text-center">
-              <MapPin className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <h3 className="font-semibold mb-1">View Map</h3>
-              <p className="text-xs text-muted-foreground mb-3">See power status across Lagos</p>
-              <Button variant="outline" size="sm" className="w-full bg-transparent">
-                Open Map
-              </Button>
-            </CardContent>
-          </Card>
+                  {/* Stats Row */}
+                  <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-border/50">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Users className="w-5 h-5" />
+                      <span className="font-medium">89 active reporters</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="w-5 h-5" />
+                      <span className="font-medium">Updated {lastUpdate}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </InteractiveCard>
 
-          <Card className="neon-glow">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <h3 className="font-semibold mb-1">Analytics</h3>
-              <p className="text-xs text-muted-foreground mb-3">Detailed power statistics</p>
-              <Button variant="outline" size="sm" className="w-full bg-transparent">
-                View Stats
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+            {/* Quick Access Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-3 gap-4 mt-8"
+            >
+              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                <div className="text-2xl font-bold text-primary">89%</div>
+                <div className="text-sm text-muted-foreground">Area Uptime</div>
+              </InteractiveCard>
+
+              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                <div className="text-2xl font-bold text-green-500">2,450</div>
+                <div className="text-sm text-muted-foreground">Your Credits</div>
+              </InteractiveCard>
+
+              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                <div className="text-2xl font-bold text-purple-500">95%</div>
+                <div className="text-sm text-muted-foreground">Accuracy</div>
+              </InteractiveCard>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
 
-      <PowerStatusModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <PowerStatusModal
+        open={showStatusModal}
+        onOpenChange={setShowStatusModal}
+        onReportSubmitted={handleReportSubmitted}
+        canRefresh={canRefresh}
+      />
     </div>
   )
 }

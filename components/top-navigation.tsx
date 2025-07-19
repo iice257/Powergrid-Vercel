@@ -1,145 +1,149 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Zap, Map, BarChart3, MoreHorizontal, MapPin, Sun, Moon, Bell } from "lucide-react"
-import { useTheme } from "next/themes"
-import { motion } from "framer-motion"
+import { useTheme } from "@/components/theme-provider"
+import { Home, Map, BarChart3, MoreHorizontal, Sun, Moon, Zap, Bell, User, MapPin } from "lucide-react"
+
+const navItems = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/map", label: "Map", icon: Map },
+  { href: "/stats", label: "Stats", icon: BarChart3 },
+  { href: "/more", label: "More", icon: MoreHorizontal },
+]
 
 export function TopNavigation() {
   const pathname = usePathname()
-  const { theme, setTheme } = useTheme() || { theme: "dark", setTheme: () => {} }
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const navItems = [
-    { href: "/", icon: Zap, label: "Home", color: "from-cyan-400 to-blue-500" },
-    { href: "/map", icon: Map, label: "Map", color: "from-green-400 to-emerald-500" },
-    { href: "/stats", icon: BarChart3, label: "Stats", color: "from-purple-400 to-pink-500" },
-    { href: "/more", icon: MoreHorizontal, label: "More", color: "from-orange-400 to-red-500" },
-  ]
-
-  if (!mounted) return null
+  const { theme, setTheme } = useTheme()
+  const [notifications] = useState(3)
 
   return (
     <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="hidden lg:flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="flex items-center gap-3"
-          >
-            <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
-              className="p-2 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg"
-            >
-              <Zap className="h-6 w-6 text-white" />
-            </motion.div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                PowerGrid
-              </h1>
-              <p className="text-xs text-muted-foreground">Track Your Power</p>
-            </div>
-          </motion.div>
-
-          {/* Navigation Items */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex items-center gap-2"
-          >
-            {navItems.map((item, index) => {
-              const isActive = pathname === item.href
-              return (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1, duration: 0.4 }}
-                >
-                  <Link href={item.href}>
-                    <Button
-                      variant={isActive ? "default" : "ghost"}
-                      size="sm"
-                      className={`
-                        relative h-10 px-3 transition-all duration-300 group
-                        ${
-                          isActive
-                            ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                            : "hover:bg-primary/10 hover:text-primary"
-                        }
-                      `}
-                    >
-                      <div className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        <span className="hidden sm:inline text-sm font-medium">{item.label}</span>
-                      </div>
-
-                      {/* Active indicator */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="activeTab"
-                          className="absolute inset-0 bg-primary rounded-md -z-10"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                        />
-                      )}
-                    </Button>
-                  </Link>
-                </motion.div>
-              )
-            })}
-          </motion.div>
-
-          {/* Right Section */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-            className="flex items-center gap-3"
-          >
-            {/* Location */}
-            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-              <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="hidden md:inline text-sm">Lagos, Ikeja</span>
-              </Button>
-            </motion.div>
-
-            {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative h-10 w-10">
-              <Bell className="h-4 w-4" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-primary">3</Badge>
-            </Button>
-
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="h-10 w-10"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-          </motion.div>
+      {/* Logo */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+        className="flex items-center gap-3"
+      >
+        <motion.div
+          whileHover={{ rotate: 360 }}
+          transition={{ duration: 0.6 }}
+          className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10"
+        >
+          <Zap className="h-6 w-6 text-primary" />
+        </motion.div>
+        <div>
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            PowerGrid
+          </h1>
+          <p className="text-xs text-muted-foreground">Track Your Power</p>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Navigation Items */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="flex items-center gap-2 p-1 rounded-2xl bg-muted/50"
+      >
+        {navItems.map((item, index) => {
+          const isActive = pathname === item.href
+          return (
+            <motion.div
+              key={item.href}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+            >
+              <Link href={item.href}>
+                <Button
+                  variant={isActive ? "default" : "ghost"}
+                  size="sm"
+                  className={`relative gap-2 px-4 py-2 transition-all duration-300 ${
+                    isActive ? "bg-primary text-primary-foreground shadow-lg" : "hover:bg-primary/10 hover:text-primary"
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="font-medium">{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-primary rounded-lg -z-10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                </Button>
+              </Link>
+            </motion.div>
+          )
+        })}
+      </motion.div>
+
+      {/* Right Side Actions */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="flex items-center gap-3"
+      >
+        {/* Location */}
+        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+          <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent">
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="hidden md:inline text-sm">Lagos, Ikeja</span>
+          </Button>
+        </motion.div>
+
+        {/* Notifications */}
+        <Button variant="ghost" size="icon" className="relative h-10 w-10">
+          <Bell className="h-4 w-4" />
+          {notifications > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-0">
+              {notifications}
+            </Badge>
+          )}
+        </Button>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="relative overflow-hidden h-10 w-10"
+        >
+          <motion.div
+            initial={false}
+            animate={{
+              rotate: theme === "dark" ? 0 : 180,
+              scale: theme === "dark" ? 1 : 1,
+            }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="relative w-4 h-4"
+          >
+            {theme === "dark" ? (
+              <Moon className="w-4 h-4 text-primary absolute inset-0" />
+            ) : (
+              <Sun className="w-4 h-4 text-primary absolute inset-0" />
+            )}
+          </motion.div>
+        </Button>
+
+        {/* Profile */}
+        <Button variant="ghost" size="icon" className="h-10 w-10">
+          <User className="h-4 w-4" />
+        </Button>
+      </motion.div>
     </motion.nav>
   )
 }
