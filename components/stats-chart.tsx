@@ -1,58 +1,75 @@
 "use client"
 
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, Legend } from "recharts"
 
-const powerData = [
-  { time: "00:00", status: 85, outages: 2 },
-  { time: "04:00", status: 92, outages: 1 },
-  { time: "08:00", status: 78, outages: 4 },
-  { time: "12:00", status: 95, outages: 0 },
-  { time: "16:00", status: 88, outages: 2 },
-  { time: "20:00", status: 82, outages: 3 },
-  { time: "24:00", status: 90, outages: 1 },
+const data = [
+  { month: "Jan", uptime: 82, outages: 18, reports: 89, efficiency: 78 },
+  { month: "Feb", uptime: 85, outages: 15, reports: 95, efficiency: 82 },
+  { month: "Mar", uptime: 78, outages: 22, reports: 78, efficiency: 75 },
+  { month: "Apr", uptime: 91, outages: 9, reports: 112, efficiency: 88 },
+  { month: "May", uptime: 88, outages: 12, reports: 98, efficiency: 85 },
+  { month: "Jun", uptime: 93, outages: 7, reports: 125, efficiency: 91 },
 ]
 
 export function StatsChart() {
   return (
-    <Card className="neon-glow">
-      <CardHeader>
-        <CardTitle>Power Status Trends</CardTitle>
-        <CardDescription>24-hour power availability in your area</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer
-          config={{
-            status: {
-              label: "Power Status %",
-              color: "hsl(var(--primary))",
-            },
-            outages: {
-              label: "Outages",
-              color: "hsl(var(--destructive))",
-            },
-          }}
-          className="h-[300px]"
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={powerData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="time" className="text-xs" />
-              <YAxis className="text-xs" />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line
-                type="monotone"
-                dataKey="status"
-                stroke="hsl(var(--primary))"
-                strokeWidth={3}
-                dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <div className="h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="uptimeGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#4ade80" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="outagesGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="reportsGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "currentColor" }} />
+          <YAxis hide />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "rgba(0,0,0,0.8)",
+              border: "none",
+              borderRadius: "12px",
+              color: "white",
+            }}
+          />
+          <Legend />
+          <Area
+            type="monotone"
+            dataKey="uptime"
+            stackId="1"
+            stroke="#4ade80"
+            strokeWidth={2}
+            fill="url(#uptimeGradient)"
+            name="Uptime %"
+          />
+          <Area
+            type="monotone"
+            dataKey="reports"
+            stackId="2"
+            stroke="#06b6d4"
+            strokeWidth={2}
+            fill="url(#reportsGradient)"
+            name="Reports"
+          />
+          <Area
+            type="monotone"
+            dataKey="outages"
+            stackId="3"
+            stroke="#ef4444"
+            strokeWidth={2}
+            fill="url(#outagesGradient)"
+            name="Outages"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
