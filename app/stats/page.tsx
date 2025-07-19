@@ -1,265 +1,288 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { StatsChart } from "@/components/stats-chart"
+import { BarChart3, TrendingUp, Zap, Users, Target } from "lucide-react"
 import {
-  BarChart,
-  Bar,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   PieChart,
   Pie,
   Cell,
 } from "recharts"
-import { TrendingUp, Zap, Award, Calendar } from "lucide-react"
-import { motion } from "framer-motion"
 
-interface StatsData {
-  dailyUptime: Array<{ day: string; uptime: number; downtime: number }>
-  weeklyTrends: Array<{ week: string; reliability: number }>
-  monthlyComparison: Array<{ name: string; value: number; color: string }>
-  achievements: Array<{ title: string; description: string; earned: boolean; date?: Date }>
-}
+// Mock data
+const weeklyData = [
+  { day: "Mon", uptime: 85, outages: 2, reports: 12 },
+  { day: "Tue", uptime: 92, outages: 1, reports: 8 },
+  { day: "Wed", uptime: 78, outages: 3, reports: 15 },
+  { day: "Thu", uptime: 95, outages: 1, reports: 6 },
+  { day: "Fri", uptime: 88, outages: 2, reports: 10 },
+  { day: "Sat", uptime: 91, outages: 1, reports: 7 },
+  { day: "Sun", uptime: 87, outages: 2, reports: 9 },
+]
+
+const monthlyData = [
+  { month: "Jan", uptime: 82, credits: 1200 },
+  { month: "Feb", uptime: 85, credits: 1350 },
+  { month: "Mar", uptime: 78, credits: 1100 },
+  { month: "Apr", uptime: 91, credits: 1500 },
+  { month: "May", uptime: 88, credits: 1400 },
+  { month: "Jun", uptime: 93, credits: 1600 },
+]
+
+const areaComparison = [
+  { name: "Your Area", value: 89, color: "#4ade80" },
+  { name: "City Average", value: 76, color: "#f59e0b" },
+  { name: "National", value: 68, color: "#ef4444" },
+]
 
 export default function StatsPage() {
-  const [statsData, setStatsData] = useState<StatsData | null>(null)
-  const [selectedPeriod, setSelectedPeriod] = useState("7d")
-
-  useEffect(() => {
-    // Simulate loading stats data
-    const mockData: StatsData = {
-      dailyUptime: [
-        { day: "Mon", uptime: 85, downtime: 15 },
-        { day: "Tue", uptime: 92, downtime: 8 },
-        { day: "Wed", uptime: 78, downtime: 22 },
-        { day: "Thu", uptime: 95, downtime: 5 },
-        { day: "Fri", uptime: 88, downtime: 12 },
-        { day: "Sat", uptime: 91, downtime: 9 },
-        { day: "Sun", uptime: 87, downtime: 13 },
-      ],
-      weeklyTrends: [
-        { week: "Week 1", reliability: 82 },
-        { week: "Week 2", reliability: 89 },
-        { week: "Week 3", reliability: 76 },
-        { week: "Week 4", reliability: 91 },
-      ],
-      monthlyComparison: [
-        { name: "Uptime", value: 87, color: "#22c55e" },
-        { name: "Downtime", value: 13, color: "#ef4444" },
-      ],
-      achievements: [
-        {
-          title: "First Logger",
-          description: "Logged your first power status",
-          earned: true,
-          date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        },
-        {
-          title: "Week Warrior",
-          description: "Logged power status for 7 consecutive days",
-          earned: true,
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        },
-        {
-          title: "Community Helper",
-          description: "Submit 10 detailed outage reports",
-          earned: false,
-        },
-        {
-          title: "Streak Master",
-          description: "Maintain a 30-day logging streak",
-          earned: false,
-        },
-      ],
-    }
-
-    setTimeout(() => setStatsData(mockData), 500)
-  }, [])
-
-  if (!statsData) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your stats...</p>
-        </div>
-      </div>
-    )
-  }
-
-  const totalUptime = Math.round(
-    statsData.dailyUptime.reduce((acc, day) => acc + day.uptime, 0) / statsData.dailyUptime.length,
-  )
-
-  const longestStreak = 15 // Mock data
-  const totalCredits = 245 // Mock data
-  const reliabilityScore = 87 // Mock data
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <h1 className="text-2xl font-bold mb-2">Your Stats</h1>
-        <p className="text-muted-foreground">Track your power logging journey</p>
-      </div>
-
-      <div className="p-4 space-y-6">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{totalUptime}%</div>
-                <div className="text-sm text-muted-foreground">Avg Uptime</div>
-                <div className="flex items-center justify-center mt-2 text-xs text-green-600">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +5% vs last week
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">{longestStreak}</div>
-                <div className="text-sm text-muted-foreground">Longest Streak</div>
-                <div className="flex items-center justify-center mt-2">
-                  <Award className="h-3 w-3 text-yellow-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">{totalCredits}</div>
-                <div className="text-sm text-muted-foreground">Total Credits</div>
-                <div className="flex items-center justify-center mt-2 text-xs text-purple-600">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +25 this week
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-1">{reliabilityScore}</div>
-                <div className="text-sm text-muted-foreground">Reliability Score</div>
-                <Progress value={reliabilityScore} className="mt-2" />
-              </CardContent>
-            </Card>
-          </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20">
+      <div className="max-w-7xl mx-auto p-4 lg:p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
+          <p className="text-lg text-muted-foreground">Detailed insights into power grid performance</p>
         </div>
 
-        {/* Charts */}
-        <Tabs defaultValue="daily" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="daily">Daily</TabsTrigger>
+        {/* Main Chart - Moved to Top */}
+        <div className="mb-8">
+          <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-primary" />
+                Power Trends Overview
+              </CardTitle>
+              <CardDescription>Monthly power statistics and trends</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StatsChart />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Zap className="w-8 h-8 text-primary" />
+                <Badge className="bg-green-500/20 text-green-400">+12%</Badge>
+              </div>
+              <div className="space-y-2">
+                <p className="text-2xl font-bold">89%</p>
+                <p className="text-sm text-muted-foreground">Average Uptime</p>
+                <Progress value={89} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <TrendingUp className="w-8 h-8 text-green-500" />
+                <Badge className="bg-blue-500/20 text-blue-400">This Month</Badge>
+              </div>
+              <div className="space-y-2">
+                <p className="text-2xl font-bold">2,450</p>
+                <p className="text-sm text-muted-foreground">Credits Earned</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Users className="w-8 h-8 text-purple-500" />
+                <Badge className="bg-purple-500/20 text-purple-400">Rank #8</Badge>
+              </div>
+              <div className="space-y-2">
+                <p className="text-2xl font-bold">156</p>
+                <p className="text-sm text-muted-foreground">Reports Submitted</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Target className="w-8 h-8 text-yellow-500" />
+                <Badge className="bg-yellow-500/20 text-yellow-400">12 Days</Badge>
+              </div>
+              <div className="space-y-2">
+                <p className="text-2xl font-bold">95%</p>
+                <p className="text-sm text-muted-foreground">Accuracy Rate</p>
+                <Progress value={95} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Detailed Analytics */}
+        <Tabs defaultValue="weekly" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 glass-card">
             <TabsTrigger value="weekly">Weekly</TabsTrigger>
             <TabsTrigger value="monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="comparison">Comparison</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="daily">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart className="h-5 w-5" />
-                  Daily Uptime (Last 7 Days)
-                </CardTitle>
-                <CardDescription>Your power availability throughout the week</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={statsData.dailyUptime}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="uptime" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+          <TabsContent value="weekly" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+                <CardHeader>
+                  <CardTitle>Weekly Uptime</CardTitle>
+                  <CardDescription>Power availability throughout the week</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={weeklyData}>
+                        <defs>
+                          <linearGradient id="uptimeGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#4ade80" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                        <YAxis hide />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "rgba(0,0,0,0.8)",
+                            border: "none",
+                            borderRadius: "12px",
+                            color: "white",
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="uptime"
+                          stroke="#4ade80"
+                          strokeWidth={3}
+                          fill="url(#uptimeGradient)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+                <CardHeader>
+                  <CardTitle>Reports Submitted</CardTitle>
+                  <CardDescription>Your contribution to the community</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={weeklyData}>
+                        <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                        <YAxis hide />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "rgba(0,0,0,0.8)",
+                            border: "none",
+                            borderRadius: "12px",
+                            color: "white",
+                          }}
+                        />
+                        <Bar dataKey="reports" fill="#06b6d4" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
-          <TabsContent value="weekly">
-            <Card>
+          <TabsContent value="monthly" className="space-y-6">
+            <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Weekly Reliability Trends
-                </CardTitle>
-                <CardDescription>Track your area's power reliability over time</CardDescription>
+                <CardTitle>Monthly Performance</CardTitle>
+                <CardDescription>Long-term trends and patterns</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={statsData.weeklyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="reliability"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="monthly">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Monthly Overview
-                </CardTitle>
-                <CardDescription>Overall power availability this month</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie
-                        data={statsData.monthlyComparison}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {statsData.monthlyComparison.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={monthlyData}>
+                      <defs>
+                        <linearGradient id="monthlyGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                      <YAxis hide />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "rgba(0,0,0,0.8)",
+                          border: "none",
+                          borderRadius: "12px",
+                          color: "white",
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="uptime"
+                        stroke="#8b5cf6"
+                        strokeWidth={3}
+                        fill="url(#monthlyGradient)"
+                      />
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex justify-center gap-4 mt-4">
-                  {statsData.monthlyComparison.map((entry) => (
-                    <div key={entry.name} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                      <span className="text-sm">
-                        {entry.name}: {entry.value}%
-                      </span>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="comparison" className="space-y-6">
+            <Card className="rounded-3xl glass-card border-primary/10 shadow-xl neon-glow-card">
+              <CardHeader>
+                <CardTitle>Performance Comparison</CardTitle>
+                <CardDescription>How you compare to others</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center mb-6">
+                  <div className="w-64 h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={areaComparison}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={120}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {areaComparison.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  {areaComparison.map((item) => (
+                    <div key={item.name} className="text-center">
+                      <div className="w-4 h-4 rounded-full mx-auto mb-2" style={{ backgroundColor: item.color }} />
+                      <p className="text-sm font-medium">{item.name}</p>
+                      <p className="text-xl font-bold" style={{ color: item.color }}>
+                        {item.value}%
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -267,60 +290,6 @@ export default function StatsPage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Achievements */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Achievements
-            </CardTitle>
-            <CardDescription>Your milestones and accomplishments</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {statsData.achievements.map((achievement, index) => (
-              <motion.div
-                key={achievement.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`flex items-center gap-3 p-3 rounded-lg border ${
-                  achievement.earned
-                    ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                    : "bg-muted/50"
-                }`}
-              >
-                <div
-                  className={`p-2 rounded-full ${
-                    achievement.earned
-                      ? "bg-green-100 text-green-600 dark:bg-green-800 dark:text-green-400"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  <Award className="h-4 w-4" />
-                </div>
-
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{achievement.title}</span>
-                    {achievement.earned && (
-                      <Badge variant="secondary" className="text-xs">
-                        Earned
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                  {achievement.earned && achievement.date && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      {achievement.date.toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

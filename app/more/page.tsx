@@ -27,7 +27,7 @@ import { useTheme } from "next/themes"
 import { motion } from "framer-motion"
 
 export default function MorePage() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme() || { theme: "dark", setTheme: () => {} }
   const [notifications, setNotifications] = useState(true)
   const [locationSharing, setLocationSharing] = useState(false)
 

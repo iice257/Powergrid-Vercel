@@ -5,213 +5,194 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Zap, ZapOff, MapPin, BarChart3, Award, Clock } from "lucide-react"
+import { Zap, MapPin, Clock, TrendingUp, CheckCircle, Users, Activity, Plus } from "lucide-react"
 import { motion } from "framer-motion"
-
-interface PowerLog {
-  id: string
-  status: "on" | "off"
-  timestamp: Date
-  location?: string
-}
-
-interface UserStats {
-  currentStreak: number
-  totalCredits: number
-  todayUptime: number
-  lastLogTime?: Date
-}
+import { PowerStatusModal } from "@/components/power-status-modal"
+import { StatsChart } from "@/components/stats-chart"
 
 export default function HomePage() {
-  const [powerStatus, setPowerStatus] = useState<"on" | "off">("on")
-  const [isLogging, setIsLogging] = useState(false)
-  const [userStats, setUserStats] = useState<UserStats>({
-    currentStreak: 7,
-    totalCredits: 245,
-    todayUptime: 87,
-    lastLogTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-  })
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handlePowerToggle = async (status: "on" | "off") => {
-    setIsLogging(true)
+  const stats = [
+    { label: "Power Status", value: "92%", icon: Zap, color: "text-green-500", trend: "+5%" },
+    { label: "Active Users", value: "1,247", icon: Users, color: "text-blue-500", trend: "+12%" },
+    { label: "Reports Today", value: "34", icon: Activity, color: "text-purple-500", trend: "+8%" },
+    { label: "Avg Uptime", value: "18.5h", icon: Clock, color: "text-orange-500", trend: "+2h" },
+  ]
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const newLog: PowerLog = {
-      id: Date.now().toString(),
-      status,
-      timestamp: new Date(),
-      location: "Current Location",
-    }
-
-    // Store in localStorage (offline-first)
-    const existingLogs = JSON.parse(localStorage.getItem("powerLogs") || "[]")
-    localStorage.setItem("powerLogs", JSON.stringify([newLog, ...existingLogs]))
-
-    setPowerStatus(status)
-    setUserStats((prev) => ({
-      ...prev,
-      currentStreak: prev.currentStreak + 1,
-      totalCredits: prev.totalCredits + 5,
-      lastLogTime: new Date(),
-    }))
-
-    setIsLogging(false)
-  }
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date()
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
-    return `${Math.floor(diffInMinutes / 1440)}d ago`
-  }
+  const recentReports = [
+    { id: 1, location: "Victoria Island", status: "online", time: "2 min ago", user: "John D." },
+    { id: 2, location: "Ikeja GRA", status: "offline", time: "5 min ago", user: "Sarah M." },
+    { id: 3, location: "Lekki Phase 1", status: "online", time: "8 min ago", user: "Mike R." },
+    { id: 4, location: "Surulere", status: "unstable", time: "12 min ago", user: "Ada K." },
+  ]
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src="/placeholder.svg?height=40&width=40&text=JD" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-lg font-semibold">Good morning, John!</h1>
-            <p className="text-sm text-muted-foreground">Ready to track power?</p>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
-        </Button>
-      </div>
-
       <div className="p-4 space-y-6">
-        {/* Power Status Card */}
-        <Card className="relative overflow-hidden">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl">Power Status</CardTitle>
-            <CardDescription>Tap to log current status</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="flex justify-center gap-4">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  size="lg"
-                  variant={powerStatus === "on" ? "default" : "outline"}
-                  onClick={() => handlePowerToggle("on")}
-                  disabled={isLogging}
-                  className="h-16 w-24 flex-col gap-1"
-                >
-                  <Zap className="h-6 w-6" />
-                  ON
-                </Button>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button
-                  size="lg"
-                  variant={powerStatus === "off" ? "destructive" : "outline"}
-                  onClick={() => handlePowerToggle("off")}
-                  disabled={isLogging}
-                  className="h-16 w-24 flex-col gap-1"
-                >
-                  <ZapOff className="h-6 w-6" />
-                  OFF
-                </Button>
-              </motion.div>
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Power Status</h1>
+              <p className="text-muted-foreground">Lagos, Ikeja • Real-time updates</p>
             </div>
+            <Button onClick={() => setIsModalOpen(true)} className="gap-2 bg-primary hover:bg-primary/90">
+              <Plus className="h-4 w-4" />
+              Report
+            </Button>
+          </div>
+        </motion.div>
 
-            {isLogging && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-muted-foreground">
-                Logging status...
-              </motion.div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{userStats.todayUptime}%</div>
-              <div className="text-sm text-muted-foreground">Today's Uptime</div>
-              <Progress value={userStats.todayUptime} className="mt-2" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{userStats.currentStreak}</div>
-              <div className="text-sm text-muted-foreground">Day Streak</div>
-              <div className="flex justify-center mt-2">
-                <Award className="h-4 w-4 text-yellow-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Credits & Last Log */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-lg px-3 py-1">
-                  {userStats.totalCredits} Credits
+        {/* Current Status Card */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <Card className="neon-glow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-full bg-green-500/10">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Power Available</h3>
+                    <p className="text-sm text-muted-foreground">Last updated 2 minutes ago</p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                  92% Uptime
                 </Badge>
               </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                {userStats.lastLogTime ? formatTimeAgo(userStats.lastLogTime) : "Never"}
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Grid Stability</span>
+                  <span className="font-medium">Excellent</span>
+                </div>
+                <Progress value={92} className="h-2" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Last outage: 6 hours ago</span>
+                  <span>Duration: 45 minutes</span>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + index * 0.1 }}
+            >
+              <Card className="neon-glow">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    <Badge variant="outline" className="text-xs">
+                      {stat.trend}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Stats Chart */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <StatsChart />
+        </motion.div>
+
+        {/* Recent Reports */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <Card className="neon-glow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Recent Reports
+              </CardTitle>
+              <CardDescription>Latest power status updates from your area</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentReports.map((report, index) => (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        report.status === "online"
+                          ? "bg-green-500"
+                          : report.status === "offline"
+                            ? "bg-red-500"
+                            : "bg-yellow-500"
+                      }`}
+                    />
+                    <div>
+                      <p className="font-medium text-sm">{report.location}</p>
+                      <p className="text-xs text-muted-foreground">by {report.user}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant={report.status === "online" ? "default" : "destructive"} className="text-xs">
+                      {report.status}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground mt-1">{report.time}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Quick Actions */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-16 flex-col gap-1 bg-transparent">
-              <MapPin className="h-5 w-5" />
-              View Map
-            </Button>
-            <Button variant="outline" className="h-16 flex-col gap-1 bg-transparent">
-              <BarChart3 className="h-5 w-5" />
-              View Stats
-            </Button>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="grid grid-cols-2 gap-4"
+        >
+          <Card className="neon-glow">
+            <CardContent className="p-4 text-center">
+              <MapPin className="h-8 w-8 mx-auto mb-2 text-primary" />
+              <h3 className="font-semibold mb-1">View Map</h3>
+              <p className="text-xs text-muted-foreground mb-3">See power status across Lagos</p>
+              <Button variant="outline" size="sm" className="w-full bg-transparent">
+                Open Map
+              </Button>
+            </CardContent>
+          </Card>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">Power restored</div>
-                <div className="text-xs text-muted-foreground">2 hours ago</div>
-              </div>
-              <Badge variant="secondary">+5 credits</Badge>
-            </div>
-
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-              <div className="h-2 w-2 rounded-full bg-red-500"></div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">Outage reported</div>
-                <div className="text-xs text-muted-foreground">5 hours ago</div>
-              </div>
-              <Badge variant="secondary">+3 credits</Badge>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="neon-glow">
+            <CardContent className="p-4 text-center">
+              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
+              <h3 className="font-semibold mb-1">Analytics</h3>
+              <p className="text-xs text-muted-foreground mb-3">Detailed power statistics</p>
+              <Button variant="outline" size="sm" className="w-full bg-transparent">
+                View Stats
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
+
+      <PowerStatusModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   )
 }
