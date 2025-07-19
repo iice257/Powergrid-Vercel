@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -18,8 +18,17 @@ const navItems = [
 
 export function TopNavigation() {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [notifications] = useState(3)
+
+  const handleLocationClick = () => {
+    router.push("/map")
+  }
+
+  const handleProfileClick = () => {
+    router.push("/more#profile")
+  }
 
   return (
     <motion.nav
@@ -99,7 +108,7 @@ export function TopNavigation() {
       >
         {/* Location */}
         <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-          <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent">
+          <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent" onClick={handleLocationClick}>
             <MapPin className="h-4 w-4 text-primary" />
             <span className="hidden md:inline text-sm">Lagos, Ikeja</span>
           </Button>
@@ -140,7 +149,7 @@ export function TopNavigation() {
         </Button>
 
         {/* Profile */}
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handleProfileClick}>
           <User className="h-4 w-4" />
         </Button>
       </motion.div>

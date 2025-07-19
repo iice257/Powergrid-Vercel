@@ -5,11 +5,11 @@ import { motion } from "framer-motion"
 import { InteractiveCard } from "@/components/interactive-card"
 import { CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PowerStatusModal } from "@/components/power-status-modal"
-import { useTheme } from "@/components/theme-provider"
-import { Zap, ZapOff, MapPin, Clock, Users, RefreshCw, Sun, Moon, Bell, User } from "lucide-react"
+import { StatsChart } from "@/components/stats-chart"
+import { Zap, ZapOff, Clock, RefreshCw, Map, TrendingUp } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export default function HomePage() {
   const [showStatusModal, setShowStatusModal] = useState(false)
@@ -18,8 +18,6 @@ export default function HomePage() {
   const [lastUpdate, setLastUpdate] = useState("2 mins ago")
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [canRefresh, setCanRefresh] = useState(true)
-  const { theme, setTheme } = useTheme()
-  const [notifications] = useState(3)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,17 +73,17 @@ export default function HomePage() {
   const getThemeColors = () => {
     if (powerStatus === "on") {
       return {
-        bg: theme === "dark" ? "from-green-500/20 to-green-600/10" : "from-green-400/20 to-green-500/10",
-        border: theme === "dark" ? "border-green-500/30" : "border-green-400/30",
-        shadow: theme === "dark" ? "shadow-green-500/20" : "shadow-green-400/20",
+        bg: "from-green-400/20 to-green-500/10",
+        border: "border-green-400/30",
+        shadow: "shadow-green-400/20",
         text: "text-green-500",
         icon: "#22c55e",
       }
     } else {
       return {
-        bg: theme === "dark" ? "from-red-500/20 to-red-600/10" : "from-red-400/20 to-red-500/10",
-        border: theme === "dark" ? "border-red-500/30" : "border-red-400/30",
-        shadow: theme === "dark" ? "shadow-red-500/20" : "shadow-red-400/20",
+        bg: "from-red-400/20 to-red-500/10",
+        border: "border-red-400/30",
+        shadow: "shadow-red-400/20",
         text: "text-red-500",
         icon: "#ef4444",
       }
@@ -95,24 +93,24 @@ export default function HomePage() {
   const themeColors = getThemeColors()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 lg:pt-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto p-4 lg:p-8 h-screen flex flex-col">
-        {/* Header with Theme Toggle */}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 lg:pt-24">
+      <div className="max-w-7xl mx-auto p-4 lg:p-8">
+        {/* Greeting Section with Power Status - Reduced spacing */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-6 gap-6"
         >
           {/* Left side - Greeting and Profile */}
           <div className="flex items-center gap-4">
-            <Avatar className="h-12 w-12 border-2 border-primary/20">
-              <AvatarImage src="/placeholder.svg?height=48&width=48&text=JD" />
-              <AvatarFallback>JD</AvatarFallback>
+            <Avatar className="h-16 w-16 border-2 border-primary/20">
+              <AvatarImage src="/placeholder.svg?height=64&width=64&text=JD" />
+              <AvatarFallback className="text-lg">JD</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold">{getGreeting()}, John!</h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <h1 className="text-3xl lg:text-4xl font-bold">{getGreeting()}, John!</h1>
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
                 <Clock className="w-4 h-4" />
                 <span>{currentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                 <span>•</span>
@@ -130,161 +128,110 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right side - Controls */}
-          <div className="flex items-center gap-3">
-            {/* Location */}
-            <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-              <Button variant="outline" size="sm" className="gap-2 h-10 bg-transparent">
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="hidden md:inline text-sm">Lagos, Ikeja</span>
-              </Button>
-            </motion.div>
-
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative h-10 w-10">
-              <Bell className="h-4 w-4" />
-              {notifications > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 text-white border-0">
-                  {notifications}
-                </Badge>
-              )}
-            </Button>
-
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="relative overflow-hidden h-10 w-10"
-            >
-              <motion.div
-                initial={false}
-                animate={{
-                  rotate: theme === "dark" ? 0 : 180,
-                  scale: theme === "dark" ? 1 : 1,
-                }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="relative w-4 h-4"
-              >
-                {theme === "dark" ? (
-                  <Moon className="w-4 h-4 text-primary absolute inset-0" />
-                ) : (
-                  <Sun className="w-4 h-4 text-primary absolute inset-0" />
-                )}
-              </motion.div>
-            </Button>
-
-            {/* Profile */}
-            <Button variant="ghost" size="icon" className="h-10 w-10">
-              <User className="h-4 w-4" />
-            </Button>
-          </div>
+          {/* Right side - Minimized Power Status Card */}
+          <InteractiveCard
+            className={`relative overflow-hidden bg-gradient-to-r ${themeColors.bg} border-2 ${themeColors.border} shadow-lg ${themeColors.shadow} cursor-pointer`}
+            onClick={() => setShowStatusModal(true)}
+          >
+            <CardContent className="p-6 flex items-center gap-4 min-w-[300px]">
+              <div className="relative">
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500`}
+                  style={{
+                    background:
+                      powerStatus === "on"
+                        ? `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`
+                        : `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`,
+                    boxShadow: `0 0 20px ${themeColors.icon}40`,
+                  }}
+                >
+                  {powerStatus === "on" ? (
+                    <Zap className="w-6 h-6 text-white" />
+                  ) : (
+                    <ZapOff className="w-6 h-6 text-white" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <h3 className={`text-xl font-bold ${themeColors.text}`}>
+                  Power is {powerStatus === "on" ? "ON" : "OFF"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {powerStatus === "on" ? "Available in your area" : "Outage reported"}
+                </p>
+              </div>
+            </CardContent>
+          </InteractiveCard>
         </motion.div>
 
-        {/* Main Content - Centered */}
-        <div className="flex-1 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="w-full max-w-2xl"
-          >
-            {/* Enhanced Power Status Card */}
-            <InteractiveCard
-              className={`relative overflow-hidden bg-gradient-to-br ${themeColors.bg} border-2 ${themeColors.border} shadow-2xl ${themeColors.shadow}`}
-            >
-              <CardContent className="p-12 text-center">
-                {/* Animated Background Glow */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${themeColors.bg} opacity-50 animate-pulse`} />
-
-                <div className="relative z-10">
-                  {/* Power Icon */}
-                  <div className="flex items-center justify-center mb-8">
-                    <div className="relative">
-                      <div
-                        className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl`}
-                        style={{
-                          background:
-                            powerStatus === "on"
-                              ? `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`
-                              : `linear-gradient(135deg, ${themeColors.icon}, ${themeColors.icon}dd)`,
-                          boxShadow: `0 0 40px ${themeColors.icon}40`,
-                        }}
-                      >
-                        {powerStatus === "on" ? (
-                          <Zap className="w-16 h-16 text-white" />
-                        ) : (
-                          <ZapOff className="w-16 h-16 text-white" />
-                        )}
-                      </div>
-                      <div
-                        className="absolute inset-0 rounded-full animate-ping"
-                        style={{ backgroundColor: `${themeColors.icon}30` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status Text */}
-                  <div className="space-y-4">
-                    <h2 className={`text-5xl font-bold ${themeColors.text} mb-4`}>
-                      Power is {powerStatus === "on" ? "ON" : "OFF"}
-                    </h2>
-                    <p className="text-xl text-muted-foreground mb-8">
-                      {powerStatus === "on"
-                        ? "Electricity is currently available in your area"
-                        : "Power outage reported in your area"}
-                    </p>
-
-                    {/* Action Button */}
-                    <Button
-                      onClick={() => setShowStatusModal(true)}
-                      size="lg"
-                      className="gap-3 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      <Zap className="w-5 h-5" />
-                      Report Power Status
-                    </Button>
-                  </div>
-
-                  {/* Stats Row */}
-                  <div className="flex items-center justify-center gap-8 mt-12 pt-8 border-t border-border/50">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="w-5 h-5" />
-                      <span className="font-medium">89 active reporters</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-5 h-5" />
-                      <span className="font-medium">Updated {lastUpdate}</span>
-                    </div>
+        {/* Main Dashboard Grid - Reduced top margin */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="w-full max-w-[80%] mx-auto"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] gap-6 h-[600px]">
+            {/* Left Column - Map Dashboard */}
+            <InteractiveCard className="relative overflow-hidden">
+              <CardContent className="p-6 h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <Map className="w-5 h-5 text-primary" />
+                    Power Grid Map
+                  </h2>
+                  <Badge variant="outline">Live</Badge>
+                </div>
+                <div className="h-full bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <Map className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Interactive Map</p>
+                    <p className="text-sm">Real-time power status across Lagos</p>
                   </div>
                 </div>
               </CardContent>
             </InteractiveCard>
 
-            {/* Quick Access Cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="grid grid-cols-3 gap-4 mt-8"
-            >
-              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
-                <div className="text-2xl font-bold text-primary">89%</div>
-                <div className="text-sm text-muted-foreground">Area Uptime</div>
+            {/* Right Column */}
+            <div className="flex flex-col gap-6">
+              {/* Top - Analytics Chart (65% height) */}
+              <InteractiveCard className="flex-[0.65]">
+                <CardContent className="p-6 h-full">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                      Analytics
+                    </h2>
+                    <Badge variant="outline">6 months</Badge>
+                  </div>
+                  <div className="h-full">
+                    <StatsChart />
+                  </div>
+                </CardContent>
               </InteractiveCard>
 
-              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
-                <div className="text-2xl font-bold text-green-500">2,450</div>
-                <div className="text-sm text-muted-foreground">Your Credits</div>
-              </InteractiveCard>
+              {/* Bottom - Stat Cards (35% height) */}
+              <div className="flex-[0.35] grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-3 gap-3 h-full">
+                  <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                    <div className="text-2xl font-bold text-primary">89%</div>
+                    <div className="text-sm text-muted-foreground">Area Uptime</div>
+                  </InteractiveCard>
 
-              <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
-                <div className="text-2xl font-bold text-purple-500">95%</div>
-                <div className="text-sm text-muted-foreground">Accuracy</div>
-              </InteractiveCard>
-            </motion.div>
-          </motion.div>
-        </div>
+                  <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                    <div className="text-2xl font-bold text-green-500">2,450</div>
+                    <div className="text-sm text-muted-foreground">Your Credits</div>
+                  </InteractiveCard>
+
+                  <InteractiveCard className="p-4 text-center hover:scale-105 transition-transform duration-300">
+                    <div className="text-2xl font-bold text-purple-500">95%</div>
+                    <div className="text-sm text-muted-foreground">Accuracy</div>
+                  </InteractiveCard>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       <PowerStatusModal

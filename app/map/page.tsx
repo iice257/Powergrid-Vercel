@@ -5,12 +5,98 @@ import { motion } from "framer-motion"
 import { InteractiveCard } from "@/components/interactive-card"
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Zap, ZapOff, MapPin, Clock, Users, Filter, Target, TrendingUp, AlertTriangle } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Zap,
+  ZapOff,
+  MapPin,
+  Clock,
+  Users,
+  Filter,
+  Target,
+  TrendingUp,
+  AlertTriangle,
+  Search,
+  Plus,
+  Star,
+  Home,
+  Building,
+  GraduationCap,
+  ShoppingBag,
+  Navigation,
+  Trash2,
+  Save,
+} from "lucide-react"
+
+interface SavedLocation {
+  id: number
+  name: string
+  address: string
+  type: string
+  coordinates: { x: number; y: number }
+  isActive: boolean
+  isCurrent?: boolean
+}
 
 export default function MapPage() {
   const [timeFilter, setTimeFilter] = useState("24h")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showAddLocation, setShowAddLocation] = useState(false)
+  const [newLocation, setNewLocation] = useState({
+    name: "",
+    address: "",
+    type: "starred",
+  })
+  const [editingLocation, setEditingLocation] = useState<number | null>(null)
+
+  const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([
+    {
+      id: 1,
+      name: "Current Location",
+      address: "Ikeja, Lagos State",
+      type: "current",
+      coordinates: { x: 80, y: 60 },
+      isActive: true,
+      isCurrent: true,
+    },
+    {
+      id: 2,
+      name: "Work Office",
+      address: "Victoria Island, Lagos",
+      type: "work",
+      coordinates: { x: 180, y: 90 },
+      isActive: true,
+    },
+    {
+      id: 3,
+      name: "Sister's Shop",
+      address: "Lekki Phase 1, Lagos",
+      type: "starred",
+      coordinates: { x: 220, y: 120 },
+      isActive: false,
+    },
+    {
+      id: 4,
+      name: "James' House",
+      address: "Surulere, Lagos",
+      type: "home",
+      coordinates: { x: 120, y: 140 },
+      isActive: true,
+    },
+    {
+      id: 5,
+      name: "University Campus",
+      address: "Yaba, Lagos",
+      type: "school",
+      coordinates: { x: 60, y: 160 },
+      isActive: false,
+    },
+  ])
 
   const reports = [
     {
@@ -74,18 +160,54 @@ export default function MapPage() {
     restoredAreas: 7,
   }
 
-  const areaLeaders = [
-    { area: "Ikeja", uptime: 95, trend: "up", reports: 234, color: "#22c55e" },
-    { area: "Lekki", uptime: 92, trend: "up", reports: 189, color: "#3b82f6" },
-    { area: "Victoria Island", uptime: 87, trend: "down", reports: 156, color: "#f59e0b" },
-    { area: "Surulere", uptime: 78, trend: "up", reports: 123, color: "#ef4444" },
-    { area: "Yaba", uptime: 85, trend: "up", reports: 98, color: "#8b5cf6" },
+  const locationTypes = [
+    { value: "starred", label: "Starred Location", icon: Star, color: "#f59e0b" },
+    { value: "home", label: "Home", icon: Home, color: "#22c55e" },
+    { value: "work", label: "Work", icon: Building, color: "#3b82f6" },
+    { value: "school", label: "School", icon: GraduationCap, color: "#8b5cf6" },
+    { value: "shop", label: "Shop", icon: ShoppingBag, color: "#ef4444" },
+    { value: "current", label: "Current Location", icon: Navigation, color: "#06b6d4" },
   ]
+
+  const getLocationTypeInfo = (type: string) => {
+    return locationTypes.find((t) => t.value === type) || locationTypes[0]
+  }
 
   const filteredReports = reports.filter((report) => {
     if (statusFilter !== "all" && report.status !== statusFilter) return false
     return true
   })
+
+  const filteredLocations = savedLocations.filter(
+    (location) =>
+      location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      location.address.toLowerCase().includes(searchQuery.toLowerCase()),
+  )
+
+  const handleAddLocation = () => {
+    if (newLocation.name && newLocation.address) {
+      const newId = Math.max(...savedLocations.map((l) => l.id)) + 1
+      setSavedLocations([
+        ...savedLocations,
+        {
+          id: newId,
+          ...newLocation,
+          coordinates: { x: Math.random() * 250 + 25, y: Math.random() * 150 + 25 },
+          isActive: true,
+        },
+      ])
+      setNewLocation({ name: "", address: "", type: "starred" })
+      setShowAddLocation(false)
+    }
+  }
+
+  const handleDeleteLocation = (id: number) => {
+    setSavedLocations(savedLocations.filter((l) => l.id !== id))
+  }
+
+  const toggleLocationActive = (id: number) => {
+    setSavedLocations(savedLocations.map((l) => (l.id === id ? { ...l, isActive: !l.isActive } : l)))
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pt-20 lg:pt-24 pb-20">
@@ -238,6 +360,34 @@ export default function MapPage() {
                     </defs>
                     <rect width="100%" height="100%" fill="url(#grid)" />
 
+                    {/* Saved Locations */}
+                    {savedLocations
+                      .filter((loc) => loc.isActive)
+                      .map((location) => {
+                        const typeInfo = getLocationTypeInfo(location.type)
+                        return (
+                          <g key={`saved-${location.id}`}>
+                            <circle
+                              cx={location.coordinates.x}
+                              cy={location.coordinates.y}
+                              r="6"
+                              fill={typeInfo.color}
+                              stroke="#fff"
+                              strokeWidth="2"
+                              className={location.isCurrent ? "animate-pulse" : ""}
+                            />
+                            <text
+                              x={location.coordinates.x}
+                              y={location.coordinates.y - 12}
+                              textAnchor="middle"
+                              className="text-xs fill-current font-medium"
+                            >
+                              {location.name}
+                            </text>
+                          </g>
+                        )
+                      })}
+
                     {/* Area Markers */}
                     {filteredReports.map((report) => (
                       <g key={report.id}>
@@ -289,6 +439,151 @@ export default function MapPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="space-y-6"
           >
+            {/* Saved Locations */}
+            <InteractiveCard>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">My Locations</CardTitle>
+                  <Dialog open={showAddLocation} onOpenChange={setShowAddLocation}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Location</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="location-name">Location Name</Label>
+                          <Input
+                            id="location-name"
+                            placeholder="e.g., Sister's Shop, James' House"
+                            value={newLocation.name}
+                            onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="location-address">Address</Label>
+                          <Input
+                            id="location-address"
+                            placeholder="e.g., Lekki Phase 1, Lagos"
+                            value={newLocation.address}
+                            onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="location-type">Location Type</Label>
+                          <Select
+                            value={newLocation.type}
+                            onValueChange={(value) => setNewLocation({ ...newLocation, type: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {locationTypes
+                                .filter((t) => t.value !== "current")
+                                .map((type) => (
+                                  <SelectItem key={type.value} value={type.value}>
+                                    <div className="flex items-center gap-2">
+                                      <type.icon className="w-4 h-4" style={{ color: type.color }} />
+                                      {type.label}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setShowAddLocation(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleAddLocation}>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Location
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {/* Search */}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search locations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                {filteredLocations.map((location) => {
+                  const typeInfo = getLocationTypeInfo(location.type)
+                  return (
+                    <div
+                      key={location.id}
+                      className={`flex items-center space-x-3 p-3 rounded-2xl border transition-colors ${
+                        location.isActive
+                          ? "bg-card/50 border-primary/20 hover:bg-muted/50"
+                          : "bg-muted/30 border-muted hover:bg-muted/50"
+                      }`}
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center`}
+                        style={{ backgroundColor: `${typeInfo.color}20` }}
+                      >
+                        <typeInfo.icon className="w-5 h-5" style={{ color: typeInfo.color }} />
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium">{location.name}</span>
+                          {location.isCurrent && (
+                            <Badge variant="secondary" className="text-xs">
+                              Current
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{location.address}</p>
+                        <p className="text-xs text-muted-foreground">{typeInfo.label}</p>
+                      </div>
+
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => toggleLocationActive(location.id)}
+                        >
+                          {location.isActive ? (
+                            <MapPin className="w-4 h-4 text-primary" />
+                          ) : (
+                            <MapPin className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                        {!location.isCurrent && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-600"
+                            onClick={() => handleDeleteLocation(location.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </InteractiveCard>
+
             {/* Recent Reports */}
             <InteractiveCard>
               <CardHeader>
@@ -327,37 +622,6 @@ export default function MapPage() {
                     <div className="text-right">
                       <Badge variant="outline" className="text-xs">
                         {report.streak} days
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </InteractiveCard>
-
-            {/* Area Leaders */}
-            <InteractiveCard>
-              <CardHeader>
-                <CardTitle className="text-lg">Top Performing Areas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {areaLeaders.map((area, index) => (
-                  <div
-                    key={area.area}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-card/50 border border-primary/5 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/60 flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{index + 1}</span>
-                      </div>
-                      <div>
-                        <span className="font-medium">{area.area}</span>
-                        <p className="text-xs text-muted-foreground">{area.reports} reports</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-semibold">{area.uptime}%</span>
-                      <Badge variant={area.trend === "up" ? "default" : "secondary"} className="text-xs">
-                        {area.trend === "up" ? "📈" : "📉"}
                       </Badge>
                     </div>
                   </div>
