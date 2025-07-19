@@ -1,337 +1,277 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Zap, ZapOff, Users, Filter } from "lucide-react"
-import { motion } from "framer-motion"
-
-interface MapReport {
-  id: string
-  lat: number
-  lng: number
-  status: "on" | "off"
-  timestamp: Date
-  userStreak: number
-  description?: string
-}
+import { Zap, ZapOff, MapPin, Clock, Users, Filter, Target } from "lucide-react"
 
 export default function MapPage() {
-  const [reports, setReports] = useState<MapReport[]>([])
   const [timeFilter, setTimeFilter] = useState("24h")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    // Simulate loading map reports
-    const loadReports = async () => {
-      setIsLoading(true)
+  const reports = [
+    {
+      id: 1,
+      location: "Ikeja",
+      status: "on",
+      timestamp: "2 mins ago",
+      reporter: "Sarah K.",
+      streak: 12,
+      reliability: 95,
+    },
+    {
+      id: 2,
+      location: "Victoria Island",
+      status: "off",
+      timestamp: "15 mins ago",
+      reporter: "Mike O.",
+      streak: 8,
+      reliability: 87,
+    },
+    {
+      id: 3,
+      location: "Lekki",
+      status: "on",
+      timestamp: "32 mins ago",
+      reporter: "Ada M.",
+      streak: 23,
+      reliability: 92,
+    },
+    {
+      id: 4,
+      location: "Surulere",
+      status: "on",
+      timestamp: "1 hour ago",
+      reporter: "John D.",
+      streak: 5,
+      reliability: 78,
+    },
+  ]
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      const mockReports: MapReport[] = [
-        {
-          id: "1",
-          lat: 6.5244,
-          lng: 3.3792,
-          status: "on",
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-          userStreak: 15,
-          description: "Power restored after 3-hour outage",
-        },
-        {
-          id: "2",
-          lat: 6.52,
-          lng: 3.38,
-          status: "off",
-          timestamp: new Date(Date.now() - 30 * 60 * 1000),
-          userStreak: 8,
-          description: "Sudden power outage in residential area",
-        },
-        {
-          id: "3",
-          lat: 6.528,
-          lng: 3.375,
-          status: "on",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          userStreak: 22,
-        },
-        {
-          id: "4",
-          lat: 6.518,
-          lng: 3.382,
-          status: "off",
-          timestamp: new Date(Date.now() - 45 * 60 * 1000),
-          userStreak: 5,
-          description: "Transformer issue reported",
-        },
-        {
-          id: "5",
-          lat: 6.535,
-          lng: 3.385,
-          status: "on",
-          timestamp: new Date(Date.now() - 15 * 60 * 1000),
-          userStreak: 12,
-          description: "Power back online",
-        },
-      ]
-
-      setReports(mockReports)
-      setIsLoading(false)
-    }
-
-    loadReports()
-  }, [])
-
-  const filteredReports = reports.filter((report) => {
-    if (statusFilter !== "all" && report.status !== statusFilter) return false
-
-    const now = new Date()
-    const reportTime = report.timestamp
-    const hoursDiff = (now.getTime() - reportTime.getTime()) / (1000 * 60 * 60)
-
-    switch (timeFilter) {
-      case "1h":
-        return hoursDiff <= 1
-      case "6h":
-        return hoursDiff <= 6
-      case "24h":
-        return hoursDiff <= 24
-      case "7d":
-        return hoursDiff <= 168
-      default:
-        return true
-    }
-  })
-
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date()
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
-    return `${Math.floor(diffInMinutes / 1440)}d ago`
-  }
-
-  const getStatusColor = (status: "on" | "off") => {
-    return status === "on" ? "bg-green-500" : "bg-red-500"
-  }
-
-  const getStatusBgColor = (status: "on" | "off") => {
-    return status === "on"
-      ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
-      : "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400"
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="p-4 border-b">
-          <h1 className="text-2xl font-bold">Community Map</h1>
-        </div>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading community reports...</p>
-          </div>
-        </div>
-      </div>
-    )
+  const areaStats = {
+    totalReports: 1247,
+    activeReporters: 89,
+    avgUptime: 89,
+    topArea: "Ikeja",
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Community Map</h1>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            {filteredReports.length} reports
-          </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4 pb-20">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2 pt-8">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Community Grid 🗺️
+          </h1>
+          <p className="text-muted-foreground text-sm">Real-time power updates from your neighbors</p>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2">
-          <Select value={timeFilter} onValueChange={setTimeFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1h">Last hour</SelectItem>
-              <SelectItem value="6h">Last 6 hours</SelectItem>
-              <SelectItem value="24h">Last 24 hours</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-            </SelectContent>
-          </Select>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="rounded-3xl glass border-primary/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Users className="w-5 h-5 text-primary" />
+                <Badge variant="secondary" className="text-xs">
+                  Active
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold text-primary">{areaStats.activeReporters}</p>
+                <p className="text-xs text-muted-foreground">reporters online</p>
+              </div>
+            </CardContent>
+          </Card>
 
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="on">Power ON</SelectItem>
-              <SelectItem value="off">Power OFF</SelectItem>
-            </SelectContent>
-          </Select>
+          <Card className="rounded-3xl glass border-primary/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <Target className="w-5 h-5 text-green-500" />
+                <Badge variant="secondary" className="text-xs">
+                  Lagos
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-2xl font-bold text-green-500">{areaStats.avgUptime}%</p>
+                <p className="text-xs text-muted-foreground">area uptime</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Map Visualization */}
-      <div className="p-4">
-        <Card className="h-64 bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden">
-          <CardContent className="h-full flex items-center justify-center relative">
-            {/* Background Grid Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="1" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-              </svg>
-            </div>
+        {/* Map Visualization */}
+        <Card className="rounded-3xl glass border-primary/10">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-primary">Grid Heatmap</h3>
+                <Badge variant="outline" className="text-xs">
+                  Live Data
+                </Badge>
+              </div>
 
-            <div className="text-center z-10">
-              <MapPin className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-muted-foreground font-medium">Lagos Area Power Map</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Showing {filteredReports.length} reports in your area
-              </p>
-            </div>
-
-            {/* Simulated map markers */}
-            <div className="absolute inset-0 p-4">
-              {filteredReports.slice(0, 6).map((report, index) => (
-                <motion.div
-                  key={report.id}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1, duration: 0.3 }}
-                  className={`absolute w-4 h-4 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-125 transition-transform ${getStatusColor(report.status)}`}
-                  style={{
-                    left: `${15 + ((index * 12) % 70)}%`,
-                    top: `${20 + ((index * 17) % 50)}%`,
-                  }}
-                  title={`Power ${report.status.toUpperCase()} - ${formatTimeAgo(report.timestamp)}`}
+              {/* Simplified map visualization */}
+              <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl overflow-hidden">
+                <svg
+                  viewBox="0 0 300 200"
+                  className="w-full h-full"
+                  style={{ filter: "drop-shadow(0 0 10px rgba(79, 172, 254, 0.3))" }}
                 >
-                  {/* Pulse animation for recent reports */}
-                  {index < 2 && (
-                    <div
-                      className={`absolute inset-0 rounded-full animate-ping ${getStatusColor(report.status)} opacity-75`}
-                    ></div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                  {/* Grid lines */}
+                  <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(79, 172, 254, 0.1)" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
 
-            {/* Legend */}
-            <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-2 text-xs">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span>Power ON</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                  <span>Power OFF</span>
+                  {/* Area markers */}
+                  <circle cx="80" cy="60" r="8" fill="#22c55e" className="animate-pulse" />
+                  <circle cx="180" cy="90" r="6" fill="#ef4444" />
+                  <circle cx="220" cy="120" r="7" fill="#22c55e" className="animate-pulse" />
+                  <circle cx="120" cy="140" r="5" fill="#22c55e" />
+                  <circle cx="60" cy="160" r="6" fill="#f59e0b" />
+
+                  {/* Area labels */}
+                  <text x="80" y="80" textAnchor="middle" className="text-xs" fill="currentColor">
+                    Ikeja
+                  </text>
+                  <text x="180" y="110" textAnchor="middle" className="text-xs" fill="currentColor">
+                    VI
+                  </text>
+                  <text x="220" y="140" textAnchor="middle" className="text-xs" fill="currentColor">
+                    Lekki
+                  </text>
+                </svg>
+
+                {/* Legend */}
+                <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Power ON</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span>Power OFF</span>
+                  </div>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Summary Stats */}
-      <div className="px-4 pb-4">
-        <div className="grid grid-cols-3 gap-3">
-          <Card>
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-green-600">
-                {filteredReports.filter((r) => r.status === "on").length}
+        {/* Filters */}
+        <Card className="rounded-3xl glass border-primary/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">Filters</span>
               </div>
-              <div className="text-xs text-muted-foreground">Power ON</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-red-600">
-                {filteredReports.filter((r) => r.status === "off").length}
+              <div className="flex space-x-2">
+                <Select value={timeFilter} onValueChange={setTimeFilter}>
+                  <SelectTrigger className="w-24 h-8 text-xs rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1h">1h</SelectItem>
+                    <SelectItem value="24h">24h</SelectItem>
+                    <SelectItem value="7d">7d</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-20 h-8 text-xs rounded-lg">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="on">On</SelectItem>
+                    <SelectItem value="off">Off</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="text-xs text-muted-foreground">Power OFF</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <div className="text-lg font-bold text-blue-600">
-                {Math.round((filteredReports.filter((r) => r.status === "on").length / filteredReports.length) * 100) ||
-                  0}
-                %
-              </div>
-              <div className="text-xs text-muted-foreground">Uptime</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Reports List */}
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent Reports</h2>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Filter className="h-3 w-3" />
-            {filteredReports.length} filtered
-          </Badge>
-        </div>
+        {/* Recent Reports */}
+        <Card className="rounded-3xl glass border-primary/10">
+          <CardHeader>
+            <CardTitle className="text-lg">Recent Reports</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {reports.map((report) => (
+              <div
+                key={report.id}
+                className="flex items-center space-x-3 p-3 rounded-2xl bg-card/50 border border-primary/5"
+              >
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    report.status === "on" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                  }`}
+                >
+                  {report.status === "on" ? <Zap className="w-5 h-5" /> : <ZapOff className="w-5 h-5" />}
+                </div>
 
-        {filteredReports.length > 0 ? (
-          filteredReports.map((report, index) => (
-            <motion.div
-              key={report.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-card rounded-lg border p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-full ${getStatusBgColor(report.status)}`}>
-                    {report.status === "on" ? <Zap className="h-4 w-4" /> : <ZapOff className="h-4 w-4" />}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm font-medium">{report.location}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {report.reliability}%
+                    </Badge>
                   </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">Power {report.status === "on" ? "ON" : "OFF"}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {report.userStreak} day streak
-                      </Badge>
-                    </div>
-
-                    {report.description && <p className="text-sm text-muted-foreground mb-2">{report.description}</p>}
-
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
-                      </span>
-                      <span>{formatTimeAgo(report.timestamp)}</span>
-                    </div>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Clock className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {report.timestamp} • {report.reporter}
+                    </span>
                   </div>
                 </div>
+
+                <div className="text-right">
+                  <Badge variant="outline" className="text-xs">
+                    {report.streak} days
+                  </Badge>
+                </div>
               </div>
-            </motion.div>
-          ))
-        ) : (
-          <div className="text-center py-8">
-            <MapPin className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-muted-foreground">No reports found for the selected filters</p>
-            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filter settings</p>
-          </div>
-        )}
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Area Leaders */}
+        <Card className="rounded-3xl glass border-primary/10">
+          <CardHeader>
+            <CardTitle className="text-lg">Top Performing Areas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              { area: "Ikeja", uptime: 95, trend: "up" },
+              { area: "Lekki", uptime: 92, trend: "up" },
+              { area: "Victoria Island", uptime: 87, trend: "down" },
+              { area: "Surulere", uptime: 78, trend: "up" },
+            ].map((area, index) => (
+              <div
+                key={area.area}
+                className="flex items-center justify-between p-3 rounded-2xl bg-card/50 border border-primary/5"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/60 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{index + 1}</span>
+                  </div>
+                  <span className="font-medium">{area.area}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-semibold">{area.uptime}%</span>
+                  <Badge variant={area.trend === "up" ? "default" : "secondary"} className="text-xs">
+                    {area.trend === "up" ? "📈" : "📉"}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
