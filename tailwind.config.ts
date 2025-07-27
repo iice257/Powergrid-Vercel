@@ -26,15 +26,15 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#00C896", // PowerGrid Primary Color
+          foreground: "#FFFFFF",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
+          DEFAULT: "#FFF44DD", // Error color from guide
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
@@ -52,6 +52,17 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // PowerGrid specific colors
+        powergrid: {
+          primary: "#00C896",
+          success: "#00D27A",
+          warning: "#FFA800",
+          error: "#FFF44DD",
+          info: "#32C1FF",
+          electric: "#FFC300",
+          dark: "#0D000D0D",
+          light: "#FFFFFF",
         },
       },
       borderRadius: {
