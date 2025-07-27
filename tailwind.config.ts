@@ -26,15 +26,15 @@ const config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#00C896", // PowerGrid Primary Color
-          foreground: "#FFFFFF",
+          DEFAULT: "#00C896", // PowerGrid Primary Green
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "#FFF44DD", // Error color from guide
+          DEFAULT: "#FFF44DD", // PowerGrid Error Red
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
@@ -42,7 +42,7 @@ const config = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
+          DEFAULT: "#266266", // PowerGrid Elevated Surface
           foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
@@ -53,16 +53,18 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // PowerGrid specific colors
+        // PowerGrid Custom Colors
         powergrid: {
           primary: "#00C896",
+          "electric-yellow": "#FFC300",
           success: "#00D27A",
           warning: "#FFA800",
           error: "#FFF44DD",
           info: "#32C1FF",
-          electric: "#FFC300",
-          dark: "#0D000D0D",
-          light: "#FFFFFF",
+          "app-bg": "#0D000D0D",
+          "elevated-surface": "#266266",
+          "text-primary": "#FFFFFF",
+          "text-disabled": "#55555F",
         },
       },
       borderRadius: {

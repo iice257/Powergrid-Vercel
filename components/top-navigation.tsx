@@ -7,7 +7,8 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTheme } from "@/components/theme-provider"
-import { Home, Map, BarChart3, MoreHorizontal, Sun, Moon, Zap, Bell, User, MapPin } from "lucide-react"
+import { Logo } from "@/components/logo"
+import { Home, Map, BarChart3, MoreHorizontal, Sun, Moon, Bell, User, MapPin } from "lucide-react"
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -42,21 +43,8 @@ export function TopNavigation() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="flex items-center gap-3"
       >
-        <motion.div
-          whileHover={{ rotate: 360 }}
-          transition={{ duration: 0.6 }}
-          className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10"
-        >
-          <Zap className="h-6 w-6 text-primary" />
-        </motion.div>
-        <div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            PowerGrid
-          </h1>
-          <p className="text-xs text-muted-foreground">Track Your Power</p>
-        </div>
+        <Logo variant="pin" size="lg" showText={true} />
       </motion.div>
 
       {/* Navigation Items */}

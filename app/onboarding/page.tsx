@@ -2,45 +2,41 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Zap, Users, BarChart3, ChevronRight, ChevronLeft } from "lucide-react"
+import { Logo } from "@/components/logo"
+import { MapPin, Zap, BarChart3, Bell, ChevronRight, ChevronLeft } from "lucide-react"
+
+const onboardingSteps = [
+  {
+    icon: MapPin,
+    title: "Track Power in Your Area",
+    description: "Get real-time updates on power availability in Lagos and surrounding areas.",
+    color: "text-emerald-500",
+  },
+  {
+    icon: Zap,
+    title: "Report Power Status",
+    description: "Help your community by reporting power outages and restorations instantly.",
+    color: "text-yellow-500",
+  },
+  {
+    icon: BarChart3,
+    title: "View Analytics",
+    description: "Access detailed statistics and trends about power availability in your region.",
+    color: "text-blue-500",
+  },
+  {
+    icon: Bell,
+    title: "Get Notifications",
+    description: "Receive alerts about power changes and outages in areas you care about.",
+    color: "text-purple-500",
+  },
+]
 
 export default function OnboardingPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
-
-  const onboardingSteps = [
-    {
-      icon: MapPin,
-      title: "Track Power in Your Area",
-      description: "Get real-time updates about power availability in Lagos and surrounding areas.",
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-500/10",
-    },
-    {
-      icon: Users,
-      title: "Community Powered",
-      description: "Join thousands of users reporting power status to help the community stay informed.",
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10",
-    },
-    {
-      icon: BarChart3,
-      title: "Analytics & Insights",
-      description: "View detailed analytics about power patterns, outages, and restoration times.",
-      color: "text-purple-500",
-      bgColor: "bg-purple-500/10",
-    },
-    {
-      icon: Zap,
-      title: "Stay Connected",
-      description: "Never be caught off guard by power outages. Get instant notifications and updates.",
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-500/10",
-    },
-  ]
 
   const handleNext = () => {
     if (currentStep < onboardingSteps.length - 1) {
@@ -56,73 +52,101 @@ export default function OnboardingPage() {
     }
   }
 
+  const handleSkip = () => {
+    router.push("/")
+  }
+
   const currentStepData = onboardingSteps[currentStep]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Progress Indicator */}
-        <div className="flex justify-center mb-8">
-          <div className="flex space-x-2">
-            {onboardingSteps.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentStep ? "bg-emerald-500" : "bg-white/30"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6">
+        <Logo variant="hexagon" size="md" showText={false} />
+        <Button variant="ghost" onClick={handleSkip} className="text-slate-400 hover:text-white">
+          Skip
+        </Button>
+      </div>
 
-        {/* Main Content */}
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardContent className="p-8 text-center">
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="w-full max-w-md">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.5 }}
+              className="text-center"
+            >
               {/* Icon */}
-              <div
-                className={`w-20 h-20 ${currentStepData.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-6`}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+                className="mb-8"
               >
-                <currentStepData.icon className={`w-10 h-10 ${currentStepData.color}`} />
-              </div>
+                <div
+                  className={`w-24 h-24 mx-auto rounded-3xl bg-slate-800 flex items-center justify-center ${currentStepData.color}`}
+                >
+                  <currentStepData.icon className="w-12 h-12" />
+                </div>
+              </motion.div>
 
               {/* Title */}
-              <h2 className="text-2xl font-bold text-white mb-4">{currentStepData.title}</h2>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="text-3xl font-bold mb-4"
+              >
+                {currentStepData.title}
+              </motion.h1>
 
               {/* Description */}
-              <p className="text-white/80 text-lg leading-relaxed mb-8">{currentStepData.description}</p>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className="text-lg text-slate-400 leading-relaxed"
+              >
+                {currentStepData.description}
+              </motion.p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center mt-8">
+      {/* Bottom Navigation */}
+      <div className="p-6">
+        {/* Progress Indicators */}
+        <div className="flex justify-center space-x-2 mb-8">
+          {onboardingSteps.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentStep ? "bg-emerald-500 w-8" : "bg-slate-600"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="text-white/60 hover:text-white disabled:opacity-30"
+            className="text-slate-400 hover:text-white disabled:opacity-30"
           >
-            <ChevronLeft className="w-4 h-4 mr-2" />
+            <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </Button>
 
-          <Button onClick={handleNext} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8">
+          <Button onClick={handleNext} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">
             {currentStep === onboardingSteps.length - 1 ? "Get Started" : "Next"}
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-
-        {/* Skip Option */}
-        <div className="text-center mt-6">
-          <Button variant="ghost" onClick={() => router.push("/")} className="text-white/60 hover:text-white text-sm">
-            Skip for now
+            <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
       </div>
