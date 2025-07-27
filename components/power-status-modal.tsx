@@ -2,144 +2,182 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { CheckCircle } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent } from "@/components/ui/card"
+import { X, MapPin, Zap } from "lucide-react"
 
 interface PowerStatusModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onReportSubmitted: (status: "on" | "off") => void
-  canRefresh: boolean
+  isOpen: boolean
+  onClose: () => void
+  defaultLocation?: string
 }
 
-export function PowerStatusModal({ open, onOpenChange, onReportSubmitted, canRefresh }: PowerStatusModalProps) {
-  const [selectedStatus, setSelectedStatus] = useState<"on" | "off">("on")
-  const [location, setLocation] = useState("Ikeja")
-  const [comments, setComments] = useState("")
+export function PowerStatusModal({ isOpen, onClose, defaultLocation = "" }: PowerStatusModalProps) {
+  const [location, setLocation] = useState(defaultLocation)
+  const [powerStatus, setPowerStatus] = useState<"on" | "off" | null>(null)
+  const [additionalInfo, setAdditionalInfo] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleSubmit = async () => {
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+    if (!location || !powerStatus) return
 
-    setTimeout(() => {
-      onReportSubmitted(selectedStatus)
-      onOpenChange(false)
-      setIsSubmitted(false)
-      setComments("")
-    }, 1500)
+    setIsSubmitting(true)
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    setIsSubmitting(false)
+    onClose()
+
+    // Reset form
+    setLocation("")
+    setPowerStatus(null)
+    setAdditionalInfo("")
   }
 
   const handleClose = () => {
-    if (!isSubmitting) {
-      onOpenChange(false)
-      setIsSubmitted(false)
-      setComments("")
-    }
+    onClose()
+    // Reset form
+    setLocation("")
+    setPowerStatus(null)
+    setAdditionalInfo("")
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="text-slate-400 hover:text-white p-0 h-auto"
-            >
-              Cancel
-            </Button>
-            <DialogTitle className="text-lg font-semibold">Report Power Update</DialogTitle>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="text-blue-400 hover:text-blue-300 p-0 h-auto bg-transparent hover:bg-transparent"
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </Button>
-          </div>
-        </DialogHeader>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={handleClose}
+          />
 
-        <AnimatePresence mode="wait">
-          {isSubmitted ? (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="py-8 text-center"
-            >
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Report Submitted!</h3>
-              <p className="text-slate-400">Thank you for helping your community stay informed</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              {/* Location */}
-              <div className="space-y-2">
-                <Label className="text-white">Location</Label>
-                <Input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
-              </div>
-
-              {/* Status Selection */}
-              <div className="space-y-4">
-                <RadioGroup
-                  value={selectedStatus}
-                  onValueChange={(value) => setSelectedStatus(value as "on" | "off")}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="on" id="power-on" className="border-blue-500 text-blue-500" />
-                    <Label htmlFor="power-on" className="text-white text-base">
-                      Power is ON
-                    </Label>
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="relative w-full max-w-md"
+          >
+            <Card className="bg-slate-900 border-slate-700 text-white">
+              <CardContent className="p-0">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-slate-700">
+                  <div>
+                    <h2 className="text-xl font-bold">Report Power Update</h2>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="off" id="power-off" className="border-slate-400 text-slate-400" />
-                    <Label htmlFor="power-off" className="text-white text-base">
-                      Power is OFF
-                    </Label>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" onClick={handleClose} className="text-slate-400">
+                      Cancel
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={handleClose}>
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                </RadioGroup>
-              </div>
+                </div>
 
-              {/* Optional Comments */}
-              <div className="space-y-2">
-                <Label className="text-white">Optional</Label>
-                <Textarea
-                  placeholder="Add any additional information..."
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 min-h-[100px]"
-                />
-              </div>
+                {/* Content */}
+                <div className="p-6 space-y-6">
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Location</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Enter location"
+                        className="pl-10 bg-slate-800 border-slate-600 text-white placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
 
-              {/* Helper Text */}
-              <p className="text-slate-400 text-sm">Your report will help keep the map up to date.</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </DialogContent>
-    </Dialog>
+                  {/* Power Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-3">Power Status</label>
+                    <div className="space-y-3">
+                      <div
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          powerStatus === "on"
+                            ? "border-emerald-500 bg-emerald-500/10"
+                            : "border-slate-600 bg-slate-800 hover:border-slate-500"
+                        }`}
+                        onClick={() => setPowerStatus("on")}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            powerStatus === "on" ? "border-emerald-500" : "border-slate-400"
+                          }`}
+                        >
+                          {powerStatus === "on" && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-emerald-500" />
+                          <span className="font-medium">Power is ON</span>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          powerStatus === "off"
+                            ? "border-red-500 bg-red-500/10"
+                            : "border-slate-600 bg-slate-800 hover:border-slate-500"
+                        }`}
+                        onClick={() => setPowerStatus("off")}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            powerStatus === "off" ? "border-red-500" : "border-slate-400"
+                          }`}
+                        >
+                          {powerStatus === "off" && <div className="w-2 h-2 rounded-full bg-red-500" />}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-red-500" />
+                          <span className="font-medium">Power is OFF</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Info */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Optional</label>
+                    <Textarea
+                      value={additionalInfo}
+                      onChange={(e) => setAdditionalInfo(e.target.value)}
+                      placeholder="Add any additional information..."
+                      className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 resize-none"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Help Text */}
+                  <p className="text-sm text-slate-400">Your report will help keep the map up to date.</p>
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 border-t border-slate-700">
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!location || !powerStatus || isSubmitting}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   )
 }

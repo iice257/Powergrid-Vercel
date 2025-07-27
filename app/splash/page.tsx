@@ -10,14 +10,14 @@ export default function SplashPage() {
 
   const slides = [
     {
-      logo: "hexagon-blue",
       background: "from-slate-900 to-slate-800",
       textColor: "text-white",
+      logoColor: "blue",
     },
     {
-      logo: "hexagon-green",
       background: "from-slate-100 to-white",
       textColor: "text-slate-900",
+      logoColor: "green",
     },
   ]
 
@@ -53,7 +53,7 @@ export default function SplashPage() {
         {/* Hexagonal Logo */}
         <div className="relative mb-8">
           <div
-            className={`w-24 h-24 ${currentSlideData.logo === "hexagon-blue" ? "bg-blue-500" : "bg-emerald-500"} rounded-2xl flex items-center justify-center transform rotate-0 transition-all duration-1000`}
+            className={`w-24 h-24 ${currentSlideData.logoColor === "blue" ? "bg-blue-500" : "bg-emerald-500"} rounded-2xl flex items-center justify-center transform transition-all duration-1000`}
           >
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" className="text-white">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" />
