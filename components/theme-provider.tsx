@@ -30,7 +30,13 @@ export function ThemeProvider({
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage?.getItem(storageKey) as Theme) || defaultTheme)
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
+
+  // localStorage only exists in the browser, so read the saved theme after mount.
+  useEffect(() => {
+    const saved = window.localStorage.getItem(storageKey) as Theme | null
+    if (saved) setTheme(saved)
+  }, [storageKey])
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -50,7 +56,7 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage?.setItem(storageKey, theme)
+      window.localStorage.setItem(storageKey, theme)
       setTheme(theme)
     },
   }
